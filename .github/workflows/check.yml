@@ -1,0 +1,18 @@
+name: Проверка модулей
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      # Модулям нужен Uroboros 1.0: до его выхода в master проверяем на ветке dev.
+      - run: pip install "uroboros-userbot @ git+https://github.com/asykixd/uroboros@dev" pytest ruff
+      - run: ruff check . && ruff format --check .
+      - run: pytest -q
