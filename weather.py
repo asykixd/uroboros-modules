@@ -10,7 +10,7 @@ import urllib.parse
 import aiohttp
 from uroboros import ConfigValue, Module, ModuleConfig, command, utils, validators
 
-URL = "https://wttr.in/{city}?format=4&lang=ru"
+URL = "https://wttr.in/{city}?format=4&lang=ru&m&M"  # m — градусы Цельсия, M — ветер в м/с
 
 
 class Weather(Module):
