@@ -4,6 +4,7 @@
 # requires_uroboros: 1.0
 """Погода сейчас с wttr.in."""
 
+import asyncio
 import urllib.parse
 
 import aiohttp
@@ -43,7 +44,7 @@ class Weather(Module):
             ):
                 text = (await response.text()).strip()
                 ok = response.status == 200
-        except (aiohttp.ClientError, TimeoutError) as e:
+        except (aiohttp.ClientError, asyncio.TimeoutError) as e:  # в 3.10 это не встроенный TimeoutError
             await utils.answer(message, utils.card("❌ <b>wttr.in не ответил</b>", utils.escape_html(e)))
             return
         if not ok or not text or "Unknown location" in text:
