@@ -20,16 +20,20 @@ class Weather(Module):
             ConfigValue("city", "", "Город по умолчанию", validators.String(max_len=100)),
         )
 
-    @command("weather", access="support")
+    @command("weather", access="support", emoji="🌤")
     async def weather(self, message):
         """[город] — погода сейчас; город по умолчанию — .cfg weather city"""
         city = utils.get_args_raw(message).strip() or self.config["city"]
         if not city:
             await utils.answer(
-                message, "❌ Укажите город: <code>weather Москва</code> или <code>cfg weather city</code>"
+                message,
+                utils.card(
+                    "❌ <b>Какой город?</b>",
+                    hint="<code>.weather Москва</code> или город по умолчанию: <code>.cfg weather city</code>",
+                ),
             )
             return
-        await utils.answer(message, "⏳ Узнаю погоду...")
+        await utils.answer(message, "⏳ <b>Узнаю погоду...</b>")
         url = URL.format(city=urllib.parse.quote(city))
         try:
             # wttr.in отдаёт короткий текст, если считает клиента консольным.
@@ -40,9 +44,9 @@ class Weather(Module):
                 text = (await response.text()).strip()
                 ok = response.status == 200
         except (aiohttp.ClientError, TimeoutError) as e:
-            await utils.answer(message, f"❌ wttr.in не ответил: {utils.escape_html(e)}")
+            await utils.answer(message, utils.card("❌ <b>wttr.in не ответил</b>", utils.escape_html(e)))
             return
         if not ok or not text or "Unknown location" in text:
-            await utils.answer(message, f"❌ Не нашёл погоду для <b>{utils.escape_html(city)}</b>")
+            await utils.answer(message, f"❌ <b>Не нашёл погоду для {utils.escape_html(city)}</b>")
             return
         await utils.answer(message, f"🌤 <b>{utils.escape_html(city)}</b>\n" + utils.quote(utils.escape_html(text)))

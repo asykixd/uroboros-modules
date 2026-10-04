@@ -50,6 +50,9 @@ def test_all_modules_load_together(loader):
     for path in MODULES:
         instances = asyncio.run(loader.install(path.read_text("utf-8"), f"file:{path.name}"))
         assert instances and all(loader.module_commands(inst) for inst in instances), path.name
+        for inst in instances:
+            missing = [cmd.name for cmd in loader.module_commands(inst) if not cmd.info.emoji]
+            assert not missing, f"{path.name}: у команд нет иконки @command(emoji=...): {missing}"
 
 
 def run(loader, text):
@@ -60,7 +63,7 @@ def run(loader, text):
 
 def test_notes(loader):
     asyncio.run(loader.install((ROOT / "notes.py").read_text("utf-8"), "file:notes.py"))
-    assert run(loader, ".notes") == "📦 Заметок нет"
+    assert run(loader, ".notes").startswith("🗂 <b>Заметок нет</b>")
     assert "сохранена" in run(loader, ".save Wifi пароль <123>")
     assert "обновлена" in run(loader, ".save wifi пароль 456")
     assert run(loader, ".note WIFI") == "пароль 456"

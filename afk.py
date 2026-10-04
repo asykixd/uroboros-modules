@@ -29,28 +29,31 @@ class AFK(Module):
         )
         self._replied = {}  # id собеседника → когда отвечали
 
-    @command("afk")
+    @command("afk", emoji="💤")
     async def afk(self, message):
         """[причина] — включить автоответ"""
         reason = utils.get_args_raw(message).strip()
         self.set("state", {"since": time.time(), "reason": reason})
         self._replied.clear()
-        text = "✅ <b>AFK включён</b>"
-        if reason:
-            text += "\n" + utils.quote(utils.escape_html(reason))
-        await utils.answer(message, text)
+        await utils.answer(
+            message,
+            utils.card(
+                "💤 <b>AFK включён</b>",
+                f"💬 Причина: {utils.escape_html(reason)}" if reason else None,
+                hint="в личке отвечу, что вас нет; выключить — <code>.unafk</code> или просто напишите что-нибудь",
+            ),
+        )
 
-    @command("unafk")
+    @command("unafk", emoji="👋")
     async def unafk(self, message):
         """— выключить автоответ"""
         state = self.get("state")
         if not state:
-            await utils.answer(message, "❌ AFK и так выключен")
+            await utils.answer(message, "❌ <b>AFK и так выключен</b>")
             return
         self.db.delete("state")
-        await utils.answer(
-            message, f"✅ AFK выключен · вас не было {utils.format_duration(time.time() - state['since'])}"
-        )
+        away = utils.format_duration(time.time() - state["since"])
+        await utils.answer(message, f"👋 <b>С возвращением!</b> · вас не было <code>{away}</code>")
 
     @watcher(only_outgoing=True)
     async def back(self, message):
@@ -73,7 +76,9 @@ class AFK(Module):
         if now - self._replied.get(sender.id, 0) < self.config["cooldown"] * 60:
             return
         self._replied[sender.id] = now
-        text = f"💤 Меня нет уже {utils.format_duration(now - state['since'])}"
-        if state["reason"]:
-            text += "\n" + utils.quote(utils.escape_html(state["reason"]))
+        text = utils.card(
+            f"💤 <b>Меня нет уже</b> <code>{utils.format_duration(now - state['since'])}</code>",
+            f"💬 {utils.escape_html(state['reason'])}" if state["reason"] else None,
+            hint="отвечу, как только вернусь",
+        )
         await message.reply(text, parse_mode="html")

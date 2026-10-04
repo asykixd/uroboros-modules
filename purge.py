@@ -12,12 +12,12 @@ CHUNK = 100  # столько сообщений Telegram удаляет одн�
 class Purge(Module):
     """Удаление своих сообщений"""
 
-    @command("purge", access="owner")
+    @command("purge", access="owner", emoji="🧹")
     async def purge(self, message):
         """(ответом) — удалить свои сообщения от того, на которое ответили, до команды"""
         reply = await utils.get_reply(message)
         if reply is None:
-            await utils.answer(message, "❌ Ответьте на сообщение, с которого начать")
+            await utils.answer(message, "❌ <b>Ответьте на сообщение, с которого начать</b>")
             return
         ids = [
             msg.id
@@ -27,11 +27,11 @@ class Purge(Module):
         for start in range(0, len(ids), CHUNK):
             await self.client.delete_messages(message.chat_id, ids[start : start + CHUNK])
 
-    @command("del", access="owner")
+    @command("del", access="owner", emoji="🗑")
     async def delete(self, message):
         """(ответом) — удалить сообщение, на которое ответили, и команду"""
         reply = await utils.get_reply(message)
         if reply is None:
-            await utils.answer(message, "❌ Ответьте на сообщение, которое удалить")
+            await utils.answer(message, "❌ <b>Ответьте на сообщение, которое удалить</b>")
             return
         await self.client.delete_messages(message.chat_id, [reply.id, message.id])
